@@ -28,7 +28,7 @@ pageLinks = block.findAll('a', href=True)
 
 for pageLink in pageLinks:
 	pageUrl = pageLink['href']
-	title = pageLink.text()
+	title = pageLink.text
 	html2 = urllib2.urlopen(pageUrl)
 	soup2 = BeautifulSoup(html2)
 	
