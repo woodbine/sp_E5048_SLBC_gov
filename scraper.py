@@ -6,8 +6,8 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 # Set up variables
-entity_id = "E5043_KUTCRBO_gov"
-url = "http://data.kingston.gov.uk/Kingston_Open_Data/"
+entity_id = "E5048_SLBC_gov"
+url = "http://www.sutton.gov.uk/downloads/download/453/expenditure_exceeding_500"
 
 # Set up functions
 def convert_mth_strings ( mth_string ):
@@ -23,18 +23,26 @@ html = urllib2.urlopen(url)
 soup = BeautifulSoup(html)
 
 # find all entries with the required class
-links = soup.findAll('a', href=True)
+block = soup.find('ul', {'class':'list-download'})
+pageLinks = block.findAll('a', href=True)
 
-for link in links:
-	url = link['href']
-	if 'https://drive.google.com/file/d/' in url:
-		title = link.contents[0]
-		# create the right strings for the new filename
-		csvYr = title.split(' ')[-1]
-		csvMth = title.split(' ')[-2][:3]
-		csvMth = csvMth.upper()
-		csvMth = convert_mth_strings(csvMth);
-		filename = entity_id + "_" + csvYr + "_" + csvMth + ".csv"
-		todays_date = str(datetime.now())
-		scraperwiki.sqlite.save(unique_keys=['l'], data={"l": url, "f": filename, "d": todays_date })
-		print filename
+for pageLink in pageLinks:
+	pageUrl = pageLink['href']
+	title = pageLink.text()
+	html2 = urllib2.urlopen(pageUrl)
+	soup2 = BeautifulSoup(html2)
+	
+	fileLinks = soup2.findAll('a', href=True)
+	
+	for fileLink in fileLinks:
+		url = fileLink['href']
+		if '.csv' in url:
+			# create the right strings for the new filename
+			csvYr = title.split(' ')[-1]
+			csvMth = title.split(' ')[-2][:3]
+			csvMth = csvMth.upper()
+			csvMth = convert_mth_strings(csvMth);
+			filename = entity_id + "_" + csvYr + "_" + csvMth + ".csv"
+			todays_date = str(datetime.now())
+			scraperwiki.sqlite.save(unique_keys=['l'], data={"l": url, "f": filename, "d": todays_date })
+			print filename
