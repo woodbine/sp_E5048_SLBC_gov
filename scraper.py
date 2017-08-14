@@ -83,7 +83,7 @@ def convert_mth_strings ( mth_string ):
 #### VARIABLES 1.0
 
 entity_id = "E5048_SLBC_gov"
-url = "http://www.sutton.gov.uk/downloads/download/453/expenditure_exceeding_500"
+url = "https://www.sutton.gov.uk/downloads/download/453/expenditure_exceeding_500"
 errors = 0
 data = []
 
@@ -95,22 +95,18 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-block = soup.find('ul', {'class':'list-download'})
-pageLinks = block.findAll('a', href=True)
-
+pageLinks = soup.findAll('a', 'download__heading')
 for pageLink in pageLinks:
     pageUrl = pageLink['href']
-    title = pageLink.text
     html2 = urllib2.urlopen(pageUrl)
-    soup2 = BeautifulSoup(html2, 'lxml')
-    ts = soup2.find_all('div', 'flip-entry')
-    for t in ts:
-        ids = t['id'].split('-')[-1]
-        url = 'https://docs.google.com/uc?authuser=0&id={}&export=dowload'.format(ids)
-        name = t.find('div', 'flip-entry-title').text
-        csvYr = name.split('.')[0][-4:]
-        csvMth = name.split('-')[-1].strip()[:3]
+    file_ids = re.findall(',\\\\x5b\\\\x22(.{28})\\\\x22,', html2.read())
+    for file_id in file_ids:
+        url = 'https://docs.google.com/uc?authuser=0&id={}&export=dowload'.format(file_id)
+        csv_html = urllib2.urlopen(url)
+        file_name = csv_html.headers.get('Content-Disposition').split('"')[1].split('"')[0]
+        csvMth = file_name.split('-')[-1].split('.')[0].strip().split()[0][:3]
         csvMth = convert_mth_strings(csvMth.upper())
+        csvYr = file_name.split('-')[-1].split('.')[0].strip().split()[-1]
         data.append([csvYr, csvMth, url])
 
 #### STORE DATA 1.0
