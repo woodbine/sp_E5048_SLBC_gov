@@ -99,7 +99,7 @@ pageLinks = soup.findAll('a', 'download__heading')
 for pageLink in pageLinks:
     pageUrl = pageLink['href']
     html2 = urllib2.urlopen(pageUrl)
-    file_ids = re.findall(',\\\\x5b\\\\x22(.{28})\\\\x22,', html2.read())
+    file_ids = re.findall('\\\\x5b\\\\x22(.{28})\\\\x22,', html2.read())
     for file_id in file_ids:
         url = 'https://docs.google.com/uc?authuser=0&id={}&export=dowload'.format(file_id)
         csv_html = urllib2.urlopen(url)
